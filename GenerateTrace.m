@@ -12,7 +12,7 @@ function [ TrueTrace ] = GenerateTrace( StateInit, StartTime, T, N, Param, Num, 
 %T数据周期
 %N数据拍数
 %Num航迹编号，从1开始
-%Flag 运动状态标志，0 直线运动（默认）
+%Flag 运动状态标志，0 直线运动（默认） 1 协调转弯
 %ProcessNoise 过程噪声
 %%参数设置
 if nargin  <  8

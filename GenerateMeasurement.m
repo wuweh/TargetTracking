@@ -21,7 +21,7 @@ function [Measure,Vol] = GenerateMeasurement( TrueTrace, ObserveTrace, RadarInfo
 % RadarInfo.ClutterD杂波密度，默认0
 % RadarInfo.Pd检测概率，默认1
 % RadarInfo.T 传感器的采样周期
-% RadarInfo.Type 传感器类型,1 GMTI 2 ESM
+% RadarInfo.Type 传感器类型,100 GMTI 200 ESM
 % RadarInfo.ID 传感器编号
 
 if nargin < 3
@@ -29,7 +29,7 @@ if nargin < 3
     RadarInfo.ClutterD = 0;
     RadarInfo.Pd = 1;
     RadarInfo.T = 1;
-    RadarInfo.Type = 1;
+    RadarInfo.Type = 100;
     RadarInfo.ID = 1;
 end
 if nargin < 4
@@ -52,14 +52,16 @@ M = length(TrueTrace);%航迹条数
 curentno = ones(1,N);
 for i = 1:M
     time = min(size(TrueTrace{i}.Data,2),N);
-    for j =1:RadarInfo.T:time
-        target = TrueTrace{i}.Data(1:3:7,j);
-        velocity = TrueTrace{i}.Data(2:3:8,j);
+    for j =1:floor(time/RadarInfo.T)
+        target = TrueTrace{i}.Data(1:3:7,1+(j-1)*RadarInfo.T);
+        velocity = TrueTrace{i}.Data(2:3:8,1+(j-1)*RadarInfo.T);
         if rand() < RadarInfo.Pd
-            Measuretemp = getmeasure(target, velocity, ObserveTrace.Data(1:3:7,j), RadarInfo.deta);
+            Measuretemp = getmeasure(target, velocity, ObserveTrace.Data(1:3:7,1+(j-1)*RadarInfo.T), RadarInfo.deta);
+%             hold on
+%             plot(Measuretemp(1)*cos(Measuretemp(2))*cos(Measuretemp(3)),Measuretemp(1)*cos(Measuretemp(2))*sin(Measuretemp(3)),'o')
             Measure{j}(curentno(j)).Echo = Measuretemp;
-            Measure{j}(curentno(j)).Time = TrueTrace{i}.Time(j);
-            Measure{j}(curentno(j)).RadarNo = RadarInfo.ID;
+            Measure{j}(curentno(j)).Time = TrueTrace{i}.Time(1+(j-1)*RadarInfo.T);
+            Measure{j}(curentno(j)).RadarNo = RadarInfo.ID+RadarInfo.Type;
             %  Measure{j}(curentno(j)).Property
             Measure{j}(curentno(j)).ID = i;
             curentno(j) = curentno(j)+1;
@@ -74,7 +76,7 @@ for j = 1:RadarInfo.T:N
         z = getmeasure(z, [0,0,0],ObserveTrace.Data(1:3:7,j),RadarInfo.deta);
         Measure{j}(curentno(j)).Echo = z;
         Measure{j}(curentno(j)).Time = TrueTrace{1}.Time(j);
-        Measure{j}(curentno(j)).RadarNo = RadarInfo.ID;
+        Measure{j}(curentno(j)).RadarNo = RadarInfo.ID+RadarInfo.Type;
         %  Measure{j}(curentno(j)).Property
         Measure{j}(curentno(j)).ID = 0;
         curentno(j) = curentno(j)+1;
